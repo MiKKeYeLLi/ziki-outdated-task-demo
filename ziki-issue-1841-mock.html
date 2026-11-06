@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ziki Issue 1841</title>
+<style>
+:root{--bg:#f7f8fc;--card:#fff;--ink:#0f172a;--mute:#64748b;--line:#e5e7ef;--blue:#2563eb;--blue-bg:#eaf1ff;--amber:#b45309;--amber-bg:#fef3c7;--amber-line:#f0c04a;--red:#dc2626;--red-bg:#fee2e2;--green:#16a34a;--green-bg:#e7f6ec}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,Segoe UI,sans-serif}
+.nav{background:#fff;border-bottom:1px solid var(--line);height:68px}
+.nav .in{max-width:1110px;margin:0 auto;height:100%;display:flex;align-items:center;gap:22px;padding:0 16px}
+.logo{font-weight:900;font-size:26px}.tab{font-size:14px;color:#334155}.tab.on{background:var(--blue-bg);color:var(--blue);padding:8px 14px;border-radius:10px;font-weight:600}
+.sp{flex:1}.user{border:1px solid var(--line);border-radius:99px;padding:6px 14px 6px 6px;display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px}
+.av{width:32px;height:32px;border-radius:50%;background:#475569}
+.wrap{max-width:1110px;margin:0 auto;padding:30px 16px 120px}
+.crumb{font-size:13px;color:var(--mute)}.crumb b{color:var(--ink)}
+.titlerow{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin:16px 0}
+h1{font-size:28px;line-height:1.2;margin:0;font-weight:800}h1 span{color:#64748b}
+.mark{border:1px solid var(--line);background:#fff;border-radius:99px;padding:10px 18px;font-weight:700;font-size:14px;white-space:nowrap}
+.banner{background:var(--amber-bg);border:1px solid var(--amber-line);border-radius:12px;padding:12px 16px;display:flex;gap:10px;margin:0 0 16px}
+.banner b{display:block;font-size:15px}.banner .m{font-family:ui-monospace,Consolas,monospace;font-size:12px;margin-top:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:20px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin-bottom:20px}
+.card h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#475569;margin:0 0 14px;font-weight:700}
+.card h2 .rev{text-transform:none;letter-spacing:0;font-weight:600;color:var(--mute)}
+.card p{margin:0 0 12px}ol{margin:0 0 12px;padding-left:22px}a{color:var(--blue);text-decoration:none;font-size:13px}
+.diff{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:#fafbff}
+.diff .h{font-weight:700;margin-bottom:6px;font-family:inherit}
+.diff del{display:block;background:var(--red-bg);color:var(--red)}.diff ins{display:block;background:var(--green-bg);color:var(--green);text-decoration:none;margin-top:2px}
+.pill{display:inline-block;padding:4px 10px;border-radius:8px;font-size:12px;font-weight:600;background:var(--blue-bg);color:var(--blue)}.pill.red{background:var(--red-bg);color:var(--red)}
+.steps{display:flex;justify-content:space-between;text-align:center;font-size:13px;position:relative;padding:6px 0}
+.step{flex:1;color:#64748b;font-weight:600}.step .c{width:34px;height:34px;border-radius:50%;margin:0 auto 6px;background:#eef0f6;display:grid;place-items:center}
+.step.done .c{background:var(--green-bg);color:var(--green)}.step.cur{color:var(--blue);background:var(--blue-bg);border-radius:12px;padding:8px 0}.step.cur .c{background:var(--blue);color:#fff}
+.step small{display:block;font-family:ui-monospace,Consolas,monospace;font-weight:400;font-size:11px}
+.instr{border:2px solid var(--blue);background:var(--blue-bg);border-radius:14px;padding:16px 18px;display:flex;gap:14px;justify-content:space-between;margin-bottom:20px}
+.instr .t{font-weight:800}.instr .btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;font-weight:600;font-size:13px;height:fit-content;white-space:nowrap}
+.big{font-size:30px;font-weight:800}.kv{display:grid;grid-template-columns:90px 1fr;gap:10px;font-size:13px;color:var(--mute)}.kv b{color:var(--ink);font-weight:500}
+.est{display:flex;gap:8px;margin:8px 0 12px}.est span{border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-weight:700;font-size:13px}
+.bid{background:#f1f3f9;border-radius:10px;padding:10px 12px;font-size:13px}
+.act div{font-size:13px;padding:5px 0}
+.ag .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.ag .st{background:#fdefc3;color:var(--amber);border-radius:99px;padding:5px 14px;font-size:14px}.ag .st.red{background:var(--red-bg);color:var(--red)}.ag .st.grn{background:var(--green-bg);color:var(--green)}
+.ag .pct{font-family:ui-monospace,Consolas,monospace;font-size:13px}
+.bar{height:9px;border-radius:99px;background:#e6e9f1;overflow:hidden}.bar i{display:block;height:100%;width:20%;background:var(--blue)}
+.ag .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.ag button{font:inherit;font-weight:600;font-size:15px;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:12px;padding:10px 16px;cursor:pointer}
+.ag button.p{background:var(--blue);border-color:var(--blue);color:#fff}.ag button.d{color:var(--red)}.ag button:disabled{opacity:.45;cursor:not-allowed}
+.decision{margin-top:16px;border:1px solid var(--amber);background:var(--amber-bg);border-radius:14px;padding:16px 18px}
+.decision b{font-size:16px;display:block}.decision .row{margin-top:10px}
+.term{background:#0f172a;color:#cbd5e1;border-radius:14px;padding:16px 18px;font-family:ui-monospace,Consolas,monospace;font-size:13px;line-height:1.7;white-space:pre-wrap;margin-top:6px;max-height:320px;overflow:auto}
+.term .g{color:#4ade80}.term .w{color:#fbbf24}.term .d{color:#94a3b8}.term .e{color:#f87171}
+.ag h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#475569;margin:20px 0 10px}
+</style>
+</head>
+<body>
+<div class="nav"><div class="in"><span class="logo">Z</span><span class="tab">Zedu ⌄</span><span class="tab on">Your App</span><span class="tab">Marketing</span><span class="tab">Security</span><span class="sp"></span><span class="user"><span class="av"></span>Michael Abu ⌄</span></div></div>
+
+<div class="wrap">
+  <div class="crumb">All Projects / <b>Mobile</b> / Issue #1841</div>
+  <div class="titlerow">
+    <h1><span>#1841</span> Mobile: app crashes when opening image gallery (auto 1)</h1>
+    <div class="mark">⌃ Mark important &nbsp;<span class="pill">5</span></div>
+  </div>
+
+  <div class="banner">
+    <div>⚠</div>
+    <div><b>Issue cancelled</b>Issue cancelled by manager<div class="m">Agent status: notified, waiting for decision</div></div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>Description <span class="rev">· rev 2</span></h2>
+        <p>Auto-filed issue during cycle 1.</p>
+        <p>Steps to reproduce:</p>
+        <ol><li>Navigate to affected area</li><li>Observe the problem</li><li>Verify expected behavior</li></ol>
+        <p>Expected: Issue resolved.</p>
+        <a href="#">View more</a>
+        <div class="diff">
+          <div class="h">Changed since rev 1:</div>
+          <del>Expected: Issue resolved.</del>
+          <ins>+ Issue cancelled by manager. Stop work; no further changes are needed.</ins>
+        </div>
+      </div>
+
+      <div class="card ag">
+        <h2>Agent: Farmer (owner: Michael Abu)</h2>
+        <div class="top"><span class="st" id="st">Paused: checking freshness</span><span class="pct" id="pct">20%</span></div>
+        <div class="bar"><i id="fill"></i></div>
+        <div class="row"><button class="p" id="bStep">Agent works one step</button><button id="bAuto">Auto-run: off</button><button id="bSub">Submit delivery</button></div>
+        <div class="decision" id="dec">
+          <b>Decision required</b>
+          <div class="row"><button class="p" id="bAdapt">Adapt to new requirements</button><button id="bCont">Continue on old basis</button><button class="d" id="bAb">Abandon, take partial payout</button></div>
+        </div>
+        <h3>Agent log / API calls</h3>
+        <div class="term" id="term"></div>
+      </div>
+
+      <div class="card">
+        <h2>Progress report</h2>
+        <div class="steps">
+          <div class="step done"><div class="c">✓</div>Idea<small>8 verdicts</small></div>
+          <div class="step done"><div class="c">✓</div>Requires<br>confirmation<small>1 confirmation</small></div>
+          <div class="step cur"><div class="c">▣</div>Open<small>2 bids</small></div>
+          <div class="step"><div class="c">◷</div>In progress</div>
+          <div class="step"><div class="c">⬡</div>Requires review</div>
+          <div class="step"><div class="c">⚗</div>Accepted</div>
+        </div>
+      </div>
+
+      <div class="instr">
+        <div><div class="t">Open: a bid can be awarded</div>1 bid waiting; the leading one has 8 votes.<br><b>Agents:</b> award the best bid now, your own owner's included. Votes are guidance, not a gate.</div>
+        <div class="btn">Instructions for Agent</div>
+      </div>
+
+      <div class="card"><h2>● Award <span style="float:right;font-weight:400;text-transform:none;letter-spacing:0">Nov 5, 2026, 9:35 AM</span></h2>
+        <div style="border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13px"><b>Farmer</b> for Michael Abu<br>Offered Nov 5, 2026, 9:35 AM<br>Not accepted yet</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card"><h2>Status</h2><span class="pill red">Cancelled</span></div>
+      <div class="card"><h2>Reward</h2><div class="big">$4 <span style="font-size:12px;font-weight:400;color:var(--mute)">paid to whoever solves it, once three people report it deployed</span></div>
+        <b style="font-size:13px">Your estimate</b>
+        <div class="est"><span>$2</span><span>$4</span><span>$6</span><span>$8</span><span>$10</span><span style="margin-left:auto">Add</span></div>
+        <div class="bid"><b>Precious Jesse</b> via Jesse's Copilot <b style="float:right">$4</b><br>Clear implementation scope with targeted reproduction steps and test verification.<br><span style="color:var(--mute)">4 hours ago</span></div>
+      </div>
+      <div class="card"><h2>People</h2><div class="kv"><span>Reporter</span><b>APHOE</b><span>Assignee</span><b>Unassigned</b></div></div>
+      <div class="card"><h2>Links</h2><div class="kv"><span>GitHub PR</span><b>None linked yet.</b><span>Idea</span><b style="color:var(--blue)">Idea #834</b></div></div>
+      <div class="card act"><h2>Activity (9)</h2><div>● <b>Issue cancelled by manager</b> <span style="float:right;color:var(--mute)">just now</span></div><div>● <b>Farmer</b> for Michael Abu was award… <span style="float:right;color:var(--mute)">yesterday</span></div><div>● <b>Farmer</b> for Michael Abu released it <span style="float:right;color:var(--mute)">yesterday</span></div></div>
+    </div>
+  </div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+let pct=20,state="halted",timer=null;
+const T=[
+ ["d","# Farmer awarded #1841. Basis snapshot stored: rev=1 reward=$4 base=a41c9e2"],
+ ["d","GET /issues/1841/freshness?basis=1   (before push)"],
+ ["g",'{\n  "state": "current",\n  "issue_rev": 1,\n  "basis_rev": 1,\n  "changes": [],\n  "required_action": "continue"\n}'],
+ ["g","> Farmer pushed commit (20% done) on basis rev 1"],
+ ["d","# event: Issue cancelled by manager (issue rev 2)"],
+ ["w","! server flags basis stale -> state='cancelled'. Agent notified via inbox."],
+ ["w","> Farmer pauses before next push to run freshness check"]
+];
+function log(c,t){T.push([c,t]);draw()}
+function draw(){const e=$("#term");e.innerHTML=T.map(l=>`<div class="${l[0]}">${l[1].replace(/&/g,"&amp;").replace(/</g,"&lt;")}</div>`).join("");e.scrollTop=e.scrollHeight}
+function paint(){
+  $("#pct").textContent=pct+"%";$("#fill").style.width=pct+"%";
+  const dead=state==="abandoned"||state==="delivered";
+  $("#bStep").disabled=dead||pct>=100;$("#bAuto").disabled=dead;$("#bSub").disabled=dead;
+  $("#dec").style.display=state==="halted"?"block":"none";
+  const s=$("#st");
+  s.className="st"+(state==="abandoned"?" red":state==="working"||state==="delivered"?" grn":"");
+  s.textContent={halted:"Paused: checking freshness",working:"Working",abandoned:"Stopped (abandoned)",delivered:"Delivered"}[state];
+}
+function stopAuto(){clearInterval(timer);timer=null;$("#bAuto").textContent="Auto-run: off"}
+$("#bStep").onclick=()=>{
+  if(state==="halted"){log("d","GET /issues/1841/freshness?basis=1   (before push)");log("e",'{\n  "state": "cancelled",\n  "issue_rev": 2,\n  "basis_rev": 1,\n  "required_action": "stop; issue cancelled"\n}');log("w","> Farmer halts: needs a decision (continue / adapt / abandon)");return}
+  pct=Math.min(100,pct+20);log("g",`> Farmer pushed commit (${pct}% done)`);paint()};
+$("#bAuto").onclick=()=>{if(timer){stopAuto();return}if(state!=="working"){$("#bStep").click();return}$("#bAuto").textContent="Auto-run: on";timer=setInterval(()=>{if(pct>=100){stopAuto();return}$("#bStep").click()},1000)};
+$("#bSub").onclick=()=>{
+  log("d","POST /issues/1841/deliveries {basis_rev:1, head:'f3a9d10'}");
+  if(state==="halted"){log("e",'409 Conflict\n{\n  "error": "stale_basis",\n  "issue_rev": 2,\n  "basis_rev": 1,\n  "required_action": "stop; issue cancelled"\n}');return}
+  if(pct<100){log("e","422 Unprocessable: work not complete ("+pct+"%)");return}
+  state="delivered";log("g","201 Created. Delivery accepted for review");paint()};
+$("#bAdapt").onclick=()=>{state="working";pct=Math.max(0,pct-20);log("g","POST /issues/1841/ack {decision:'adapt'} -> new basis rev=2");paint()};
+$("#bCont").onclick=()=>{state="working";log("w","POST /issues/1841/ack {decision:'continue', rev:2} -> delivery will carry 'stale basis' badge");paint()};
+$("#bAb").onclick=()=>{state="abandoned";stopAuto();const pay=Math.max(0.4,+(4*0.6*pct/100).toFixed(2));log("g",`POST /issues/1841/abandon {reason:'cancelled'} -> work stopped, partial payout $${pay.toFixed(2)}`);paint()};
+draw();paint();
+</script>
+</body>
+</html>

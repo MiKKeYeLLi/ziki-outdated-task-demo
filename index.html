@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ziki Stale Work Demo</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#101828;--mute:#667085;--line:#e4e7ec;--blue:#2563eb;--blue-bg:#eaf1ff;--green:#16a34a;--green-bg:#e7f6ec;--amber:#b45309;--amber-bg:#fef3c7;--red:#dc2626;--red-bg:#fee2e2;--code:#0f172a;--codeink:#e2e8f0}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1117;--card:#161b22;--ink:#e6edf3;--mute:#8b949e;--line:#30363d;--blue:#58a6ff;--blue-bg:#12233f;--green:#3fb950;--green-bg:#0f2a1a;--amber:#e3b341;--amber-bg:#3a2d0a;--red:#f85149;--red-bg:#3d1214;--code:#010409;--codeink:#c9d1d9}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,Segoe UI,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 80px}
+h1{font-size:22px;margin:6px 0 2px}h2{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:0 0 10px}
+.crumb{color:var(--mute);font-size:13px}
+.grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;margin-top:16px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600}
+.p-blue{background:var(--blue-bg);color:var(--blue)}.p-green{background:var(--green-bg);color:var(--green)}.p-amber{background:var(--amber-bg);color:var(--amber)}.p-red{background:var(--red-bg);color:var(--red)}
+.banner{border-radius:12px;padding:12px 14px;border:1px solid;display:flex;gap:10px;align-items:flex-start;margin-bottom:16px}
+.b-ok{background:var(--blue-bg);border-color:var(--blue)}.b-warn{background:var(--amber-bg);border-color:var(--amber)}.b-bad{background:var(--red-bg);border-color:var(--red)}
+.banner b{display:block}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:7px 12px;font-weight:600}
+button:hover{border-color:var(--blue)}button.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+button.danger{color:var(--red)}button:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;font-size:13px}.kv span:nth-child(odd){color:var(--mute)}
+code,.mono{font-family:ui-monospace,Consolas,monospace;font-size:12px}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--blue);transition:width .3s}
+.desc{white-space:pre-wrap;border-left:3px solid var(--line);padding-left:12px}
+.diff del{background:var(--red-bg);color:var(--red);text-decoration:line-through}.diff ins{background:var(--green-bg);color:var(--green);text-decoration:none}
+.feed{max-height:300px;overflow:auto;font-size:13px}.feed div{padding:6px 0;border-bottom:1px solid var(--line)}.feed small{color:var(--mute)}
+.term{background:var(--code);color:var(--codeink);border-radius:10px;padding:10px 12px;max-height:260px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;font-size:12px}
+.term .e{color:#f87171}.term .w{color:#fbbf24}.term .g{color:#4ade80}.term .d{color:#94a3b8}
+.stages{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px}.stage{font-size:12px;padding:4px 10px;border-radius:99px;background:var(--line);color:var(--mute)}.stage.on{background:var(--blue);color:#fff}
+.sim button{font-size:12px;padding:6px 10px}
+.sim h3{font-size:12px;color:var(--mute);margin:12px 0 6px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;position:relative}
+.bell{position:relative;padding:8px 12px}.badge{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border-radius:99px;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 5px}
+.ring{animation:ring .6s}@keyframes ring{0%,100%{transform:rotate(0)}25%{transform:rotate(14deg)}75%{transform:rotate(-14deg)}}
+.panel{position:absolute;right:0;top:46px;width:min(380px,92vw);background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.2);z-index:50;display:none}
+.panel.open{display:block}.panel header{display:flex;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:700}
+.nlist{max-height:380px;overflow:auto}.nitem{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;gap:10px}
+.nitem.unread{background:var(--blue-bg)}.dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex:none}
+.d-material{background:var(--amber)}.d-superseded,.d-cancelled{background:var(--red)}.d-info{background:var(--mute)}.d-ok{background:var(--green)}
+.nitem small{color:var(--mute)}.nitem .row{margin-top:6px}.nitem button{font-size:12px;padding:4px 9px}
+.toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:10px;z-index:60;width:min(360px,92vw)}
+.toast{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--amber);border-radius:12px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.2);animation:in .25s}
+.toast.t-red{border-left-color:var(--red)}.toast.t-green{border-left-color:var(--green)}.toast b{display:block}
+@keyframes in{from{transform:translateY(12px)}to{transform:none}}
+#banner{position:sticky;top:8px;z-index:40}
+.alert{position:fixed;top:14px;left:50%;transform:translateX(-50%);width:min(560px,94vw);z-index:70;display:none}
+.alert.show{display:block;animation:drop .25s}@keyframes drop{from{transform:translate(-50%,-12px)}to{transform:translate(-50%,0)}}
+.alert .box{border-radius:14px;padding:14px 16px;border:2px solid var(--amber);background:var(--amber-bg);color:var(--ink);box-shadow:0 16px 48px rgba(0,0,0,.3)}
+.alert.red .box{border-color:var(--red);background:var(--red-bg)}
+.alert b{font-size:15px}.alert ul{margin:6px 0 10px;padding-left:18px}
+.chan{font-size:12px;color:var(--mute);padding:10px 14px;border-top:1px solid var(--line)}.chan label{margin-right:12px;cursor:pointer}
+.chip{border:1px solid var(--line);border-radius:8px;padding:5px 12px;font-weight:700;font-size:13px}
+.bidbox{background:var(--blue-bg);border-radius:10px;padding:10px 12px;font-size:13px}
+.simtoggle{position:fixed;left:16px;bottom:16px;z-index:65;border-radius:99px;font-size:12px;opacity:.75}.simtoggle:hover{opacity:1}
+.simdrawer{position:fixed;left:16px;bottom:58px;width:min(420px,92vw);z-index:65;display:none;margin:0;box-shadow:0 12px 40px rgba(0,0,0,.25)}.simdrawer.open{display:block}
+.mail{font-size:12px;border:1px dashed var(--line);border-radius:10px;padding:8px 10px;margin-top:8px;color:var(--mute)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <b>Ziki · Zedu</b>
+    <button class="bell" id="bell" title="Notifications">🔔<span class="badge" id="badge" style="display:none">0</span></button>
+    <div class="panel" id="panel">
+      <header><span>Notifications</span><button id="markAll" style="font-size:12px;padding:3px 8px">Mark all read</button></header>
+      <div class="nlist" id="nlist"></div>
+      <div class="chan">Channels:
+        <label><input type="checkbox" id="chInApp" checked> in-app toast</label>
+        <label><input type="checkbox" id="chBrowser"> browser/desktop</label>
+        <label><input type="checkbox" id="chMail" checked> email preview</label>
+        <div id="mailBox"></div>
+      </div>
+    </div>
+  </div>
+  <div class="crumb">All Projects / Mobile / Issue #1779 &nbsp;·&nbsp; <b>Stale-work detection demo</b></div>
+  <h1>#1779 Mobile: Media Gallery can show files from a previous tab after rapid switching</h1>
+  <div class="stages" id="stages"></div>
+
+  <div id="banner"></div>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>Description <span class="mono" id="revTag"></span></h2>
+        <div class="desc" id="desc"></div>
+        <div id="diffBox" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card">
+        <h2>Agent: Farmer (owner: Michael Abu)</h2>
+        <div class="row" style="justify-content:space-between;margin-bottom:6px"><span id="agentState" class="pill p-blue">Working</span><span class="mono" id="pct"></span></div>
+        <div class="bar"><i id="barFill" style="width:0"></i></div>
+        <div class="row" style="margin-top:12px">
+          <button id="btnStep" class="primary">Agent works one step</button>
+          <button id="btnAuto">Auto-run: off</button>
+          <button id="btnSubmit">Submit delivery</button>
+        </div>
+        <div id="decision" style="margin-top:12px"></div>
+        <h2 style="margin-top:14px">Agent log / API calls</h2>
+        <div class="term" id="term"></div>
+      </div>
+
+      <div class="card">
+        <h2>Reviewer view (Requires review)</h2>
+        <div id="review" style="color:var(--mute)">No delivery yet.</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>Status</h2>
+        <span class="pill" id="statusPill">● Open · Open</span>
+      </div>
+
+      <div class="card">
+        <h2>Reward</h2>
+        <div id="reward"></div>
+        <b style="font-size:13px;display:block;margin-top:12px">Your estimate</b>
+        <div class="row" style="margin:8px 0 12px"><span class="chip">$2</span><span class="chip">$4</span><span class="chip">$6</span><span class="chip">$8</span><span class="chip">$10</span><span class="chip" style="margin-left:auto">Add</span></div>
+        <div class="bidbox"><b>Precious Jesse</b> via Jesse's Copilot <b style="float:right">$4</b><br>Clear implementation scope with targeted reproduction steps and test verification.<br><small style="color:var(--mute)">4 hours ago</small></div>
+      </div>
+
+      <div class="card">
+        <h2>People</h2>
+        <div class="kv"><span>Reporter</span><span><b>AP</b> APHOE</span><span>Assignee</span><span id="assignee">Farmer</span></div>
+      </div>
+
+      <div class="card">
+        <h2>Freshness evaluator</h2>
+        <div id="eval"></div>
+        <h2 style="margin-top:14px">Work basis (snapshot at award)</h2>
+        <div class="kv" id="basis"></div>
+      </div>
+
+      <div class="card">
+        <h2>Links</h2>
+        <div class="kv"><span>GitHub PR</span><span>None linked yet.</span><span>Idea</span><span style="color:var(--blue)">Idea #833</span></div>
+      </div>
+
+      <div class="card">
+        <h2>Activity <span id="actCount"></span></h2>
+        <div class="feed" id="feed"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button id="simToggle" class="simtoggle" title="Presenter controls">⚙ Demo controls</button>
+<div class="card sim simdrawer" id="simDrawer">
+  <h2>Simulate changes (what could go stale)</h2>
+  <h3>Issue-side</h3>
+  <div class="row">
+    <button data-ev="typo">Fix a typo</button>
+    <button data-ev="reward">Reward $7 → $10</button>
+    <button data-ev="req">Change requirements</button>
+    <button data-ev="dup">Mark duplicate of #1841</button>
+    <button data-ev="cancel" class="danger">Cancel issue</button>
+  </div>
+  <h3>Project-side</h3>
+  <div class="row">
+    <button data-ev="base_no">Base branch moves (no overlap)</button>
+    <button data-ev="base_yes">Base branch moves (touches agent's files)</button>
+    <button data-ev="fixed">Fix merged elsewhere (PR #902)</button>
+  </div>
+  <div style="margin-top:12px" class="row"><button id="btnReset">Reset to default (cancelled)</button><button id="btnClean">Clean slate (agent working)</button></div>
+</div>
+<div class="toasts" id="toasts"></div>
+<div class="alert" id="alert"></div>
+<script>
+const $=s=>document.querySelector(s);
+// ---------- Notifications ----------
+let N=[],nid=0,remind=null;
+function notify(level,title,body,actions=[]){
+  const n={id:++nid,level,title,body,actions,time:now(),read:false};
+  N.unshift(n);
+  // channel: in-app toast
+  if($("#chInApp").checked&&level!=="info")toast(n);
+  // channel: browser/desktop notification
+  if($("#chBrowser").checked&&"Notification" in window&&Notification.permission==="granted"&&level!=="info"){
+    try{new Notification(title,{body})}catch(e){}
+  }
+  // channel: email preview (only for things needing a decision)
+  if($("#chMail").checked&&["material","superseded","cancelled"].includes(level)){
+    $("#mailBox").innerHTML=`<div class="mail"><b>✉ To: abuokhai@gmail.com</b><br>Subject: ${esc(title)}<br>${esc(body)}<br>Open: ziki.dev/zedu/mobile/1779</div>`;
+  }
+  $("#bell").classList.remove("ring");void $("#bell").offsetWidth;if(level!=="info")$("#bell").classList.add("ring");
+  renderNotifs();
+}
+function toast(n){
+  const t=document.createElement("div");
+  t.className="toast "+(n.level==="material"?"":n.level==="ok"?"t-green":"t-red");
+  t.innerHTML=`<b>${esc(n.title)}</b><span style="color:var(--mute)">${esc(n.body)}</span><div class="row" style="margin-top:8px"><button style="font-size:12px;padding:4px 9px" data-open>Review</button><button style="font-size:12px;padding:4px 9px" data-x>Dismiss</button></div>`;
+  t.querySelector("[data-open]").onclick=()=>{t.remove();$("#panel").classList.add("open");n.read=true;renderNotifs();$("#decision").scrollIntoView({behavior:"smooth",block:"center"})};
+  t.querySelector("[data-x]").onclick=()=>t.remove();
+  $("#toasts").appendChild(t);setTimeout(()=>t.remove(),5000);
+}
+function renderNotifs(){
+  const un=N.filter(n=>!n.read).length;
+  $("#badge").style.display=un?"block":"none";$("#badge").textContent=un;
+  $("#nlist").innerHTML=N.length?N.map(n=>`<div class="nitem ${n.read?"":"unread"}"><span class="dot d-${n.level}"></span><div><b>${esc(n.title)}</b><br>${esc(n.body)}<br><small>${n.time}</small>${n.actions.length?`<div class="row">${n.actions.map((a,i)=>`<button data-n="${n.id}" data-a="${i}">${a.label}</button>`).join("")}</div>`:""}</div></div>`).join(""):'<div class="nitem" style="color:var(--mute)">No notifications.</div>';
+  document.querySelectorAll("#nlist [data-a]").forEach(b=>b.onclick=()=>{const n=N.find(x=>x.id==b.dataset.n);n.read=true;n.actions[b.dataset.a].fn();renderNotifs()});
+}
+function scheduleReminder(){clearTimeout(remind);remind=setTimeout(()=>{if(["halted","paused"].includes(S.agent)){notify("superseded","Reminder: Farmer is still waiting","Agent idle on #1779 since the change. Idle work burns time; decide now.",[{label:"Abandon & pay partial",fn:()=>decide("abandon")}])}},12000)}
+function cancelReminder(){clearTimeout(remind)}
+$("#bell").onclick=e=>{$("#panel").classList.toggle("open");e.stopPropagation()};
+$("#panel").onclick=e=>e.stopPropagation();document.addEventListener("click",()=>$("#panel").classList.remove("open"));
+$("#markAll").onclick=()=>{N.forEach(n=>n.read=true);renderNotifs()};
+$("#chBrowser").onchange=e=>{if(e.target.checked&&"Notification" in window&&Notification.permission==="default")Notification.requestPermission().then(p=>{if(p!=="granted")e.target.checked=false})};
+const ORIG_DESC="Each Media Gallery tab triggers an asynchronous channel-files request. The hook does not cancel or identify earlier requests when fileCategory changes. If an older tab request completes last, it overwrites the list.\n\nExpected: gallery shows only files for the selected tab.";
+const NEW_DESC="Each Media Gallery tab triggers an asynchronous channel-files request. The hook does not cancel or identify earlier requests when fileCategory changes.\n\nExpected: gallery shows only files for the selected tab AND must keep scroll position when switching tabs. Add regression tests for rapid switching.";
+const FILES=["gallery/useChannelFiles.ts","gallery/MediaGallery.tsx"];
+let S;
+
+function init(clean){
+  S={hideAlert:false,rev:1,desc:ORIG_DESC,reward:7,status:"Open",stage:2,dup:false,cancelled:false,fixedElsewhere:false,
+     baseSha:"a41c9e2",headSha:"a41c9e2",
+     basis:{rev:1,reward:7,baseSha:"a41c9e2",files:[...FILES]},
+     events:[],  // {sev,text,rev,ack}
+     progress:0,agent:"working",auto:false,timer:null,delivery:null,descDiffFrom:null,payout:null,log:[],feed:[]};
+  addFeed("Farmer was awarded this issue (basis rev 1, base a41c9e2).");
+  log("d","# Farmer awarded #1779. Basis snapshot stored: rev=1 reward=$7 base=a41c9e2");
+  if(!clean){ // default screen: issue already cancelled, agent paused waiting for a decision
+    log("d","GET /issues/1779/freshness?basis=1   (before push)");
+    log("g",'{\n  "state": "current",\n  "issue_rev": 1,\n  "basis_rev": 1,\n  "changes": [],\n  "required_action": "continue"\n}');
+    S.progress=20;log("g","> Farmer pushed commit (20% done) on basis rev 1");
+    S.cancelled=true;S.status="Cancelled";S.rev=2;
+    S.events.push({sev:"cancelled",text:"Issue cancelled by manager",rev:2,ack:false});
+    addFeed("Issue cancelled by manager");
+    log("d","# event: Issue cancelled by manager");
+    log("w","! server flags basis stale -> state='cancelled'. Agent notified via inbox.");
+    log("w","> Farmer pauses before next push to run freshness check");
+    S.agent="halted";S.hideAlert=true;
+    N.unshift({id:++nid,level:"cancelled",title:"#1779 was cancelled; Farmer stopped",body:"Issue cancelled by manager. Agent progress 20%.",actions:[{label:"Abandon & pay partial",fn:()=>decide("abandon")}],time:now(),read:false});
+    renderNotifs();
+  }
+  render();
+}
+const now=()=>new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
+function addFeed(t){S.feed.unshift({t,time:now()})}
+function log(cls,t){S.log.push({cls,t});}
+function esc(s){return s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}
+
+// ---------- Freshness evaluator ----------
+const RANK={info:1,material:2,superseded:3,cancelled:4};
+function evaluate(){
+  const open=S.events.filter(e=>!e.ack);
+  const worst=open.reduce((m,e)=>RANK[e.sev]>(RANK[m]||0)?e.sev:m,null);
+  let state="current";
+  if(worst==="material")state="changed";
+  if(worst==="superseded")state="superseded";
+  if(worst==="cancelled")state="cancelled";
+  const required={current:"continue",changed:"acknowledge: continue, adapt or abandon",superseded:"stop or ask; work likely not needed",cancelled:"stop; issue cancelled"}[state];
+  return {state,issue_rev:S.rev,basis_rev:S.basis.rev,changes:open.map(e=>({severity:e.sev,what:e.text})),required_action:required};
+}
+
+// ---------- Events ----------
+const EVENTS={
+ typo:()=>{S.desc=S.desc.replace("asynchronous","asynchronous");S.desc=S.desc.replace("overwrites the list.","overwrites the list.");
+   S.rev+=0;push("info","Typo fixed in description (cosmetic, no notification)","Description: cosmetic edit")},
+ reward:()=>{S.reward=10;push("info","Reward changed $7 → $10","Reward raised to $10")},
+ req:()=>{S.descDiffFrom=S.desc;S.desc=NEW_DESC;S.rev++;push("material","Requirements changed: scroll position must be preserved; regression tests required","Requirements edited (issue rev "+S.rev+")",true)},
+ dup:()=>{S.dup=true;push("superseded","Marked duplicate of #1841, which already has an accepted bid","Marked as duplicate of #1841",true)},
+ cancel:()=>{S.cancelled=true;S.status="Cancelled";push("cancelled","Issue cancelled by manager","Issue cancelled",true)},
+ base_no:()=>{S.baseSha="b7d03f1";push("info","Base branch advanced a41c9e2 → b7d03f1; none of the agent's files touched","Base branch advanced (no overlap)")},
+ base_yes:()=>{S.baseSha="c92e7aa";push("material","Base branch advanced to c92e7aa; gallery/useChannelFiles.ts changed upstream (merge conflict risk)","Base branch advanced, overlaps agent files",true)},
+ fixed:()=>{S.fixedElsewhere=true;push("superseded","PR #902 merged on the base branch and already fixes this (request cancellation added)","PR #902 merged: fixes same bug",true)}
+};
+function push(sev,text,feed,bump){
+  S.hideAlert=false;
+  S.events.push({sev,text,rev:S.rev,ack:false});
+  addFeed(feed);
+  const f=evaluate();
+  log("d",`# event: ${feed}`);
+  if(sev==="info"){log("d","  freshness stays 'current' (info only, agent not interrupted)");notify("info","FYI: "+feed,"No action needed; agent keeps working.")}
+  else{log("w",`! server flags basis stale -> state='${f.state}'. Agent notified via inbox.`);
+    const titles={material:"Farmer paused: requirements changed on #1779",superseded:"#1779 may no longer be needed",cancelled:"#1779 was cancelled; Farmer stopped"};
+    const acts=sev==="material"?[{label:"Let agent adapt",fn:()=>decide("adapt")},{label:"Abandon",fn:()=>decide("abandon")}]:[{label:"Abandon & pay partial",fn:()=>decide("abandon")}];
+    notify(sev,titles[sev],text+". Agent progress "+S.progress+"%.",acts);scheduleReminder()}
+  if(RANK[sev]>=2 && S.agent==="working"){ S.agent="paused"; stopAuto(); log("w","> Farmer pauses before next push to run freshness check")}
+  render();
+}
+
+// ---------- Agent ----------
+function checkFresh(why){
+  const f=evaluate();
+  log("d",`GET /issues/1779/freshness?basis=${S.basis.rev}   (${why})`);
+  log(f.state==="current"?"g":"e",JSON.stringify(f,null,2));
+  return f;
+}
+function step(){
+  if(["abandoned","delivered"].includes(S.agent))return;
+  const f=checkFresh("before push");
+  if(f.state!=="current"){S.agent="halted";stopAuto();log("w","> Farmer halts: needs a decision (continue / adapt / abandon)");render();return}
+  S.agent="working";
+  S.progress=Math.min(100,S.progress+20);
+  log("g",`> Farmer pushed commit (${S.progress}% done) on basis rev ${S.basis.rev}`);
+  render();
+}
+function stopAuto(){clearInterval(S.timer);S.timer=null;S.auto=false}
+function toggleAuto(){
+  if(S.auto){stopAuto()}else{S.auto=true;S.timer=setInterval(()=>{if(S.progress>=100||S.agent!=="working"){stopAuto();render();return}step()},1100)}
+  render();
+}
+function decide(kind){
+  const f=evaluate();cancelReminder();
+  if(["abandoned","delivered"].includes(S.agent))return;
+  notify("ok",{continue:"Farmer continues on old basis",adapt:"Farmer is adapting to the new requirements",abandon:"Farmer stopped #1779"}[kind],kind==="abandon"?"Work stopped early; partial payout will be recorded.":kind==="adapt"?"New basis stored; some rework needed.":"Delivery will be flagged 'stale basis' for the reviewer.");
+  if(kind==="continue"){
+    S.events.forEach(e=>e.ack=true);S.agent="working";
+    S.continuedStale=true;
+    addFeed("Farmer acknowledged changes and continues on old basis (risk flagged)");
+    log("w","POST /issues/1779/ack {decision:'continue', rev:"+S.rev+"}  -> delivery will carry 'stale basis' badge");
+  }
+  if(kind==="adapt"){
+    S.events.forEach(e=>e.ack=true);
+    S.basis={rev:S.rev,reward:S.reward,baseSha:S.baseSha,files:[...FILES]};
+    S.agent="working";S.progress=Math.max(0,S.progress-20);S.continuedStale=false;
+    addFeed("Farmer adapted: rebased and re-read requirements, new basis rev "+S.rev);
+    log("g","POST /issues/1779/ack {decision:'adapt'} -> new basis rev="+S.rev+" base="+S.baseSha+"  (rolled back 20% for rework)");
+  }
+  if(kind==="abandon"){
+    const reason=S.cancelled?"cancelled":S.dup?"duplicate":S.fixedElsewhere?"fixed elsewhere":"requirements changed";
+    const kill=Math.round(S.reward*0.1*100)/100, prog=Math.round(S.reward*0.6*S.progress)/100;
+    const pay=Math.max(kill,prog);
+    S.payout={pay,kill,prog,reason};S.agent="abandoned";stopAuto();
+    S.events.forEach(e=>e.ack=true);
+    addFeed(`Farmer stopped early (${reason}). Partial payout $${pay.toFixed(2)}`);
+    log("g",`POST /issues/1779/abandon {reason:'${reason}'} -> work stopped, partial payout $${pay.toFixed(2)}`);
+  }
+  render();
+}
+function submit(){
+  if(["abandoned","delivered"].includes(S.agent))return;
+  const f=evaluate();
+  log("d",`POST /issues/1779/deliveries {basis_rev:${S.basis.rev}, head:'f3a9d10'}`);
+  if(f.state!=="current"){
+    log("e","409 Conflict\n"+JSON.stringify({error:"stale_basis",issue_rev:S.rev,basis_rev:S.basis.rev,changes:f.changes,required_action:f.required_action},null,2));
+    S.agent="halted";stopAuto();render();return;
+  }
+  if(S.progress<100){log("e","422 Unprocessable: work not complete ("+S.progress+"%)");render();return}
+  notify("ok","Farmer delivered #1779","Ready for review"+(S.continuedStale?" (stale basis flagged)":"")+".");
+  S.agent="delivered";S.delivery={stale:!!S.continuedStale,basis:S.basis.rev};
+  log("g","201 Created. Delivery accepted for review"+(S.continuedStale?" (flagged: stale basis)":""));
+  addFeed("Farmer submitted delivery"+(S.continuedStale?" [stale basis]":""));
+  render();
+}
+
+// ---------- Render ----------
+function render(){
+  const f=evaluate();
+  // stages
+  const st=["Idea","Requires confirmation","Open","In progress","Requires review","Accepted"];
+  let cur=S.agent==="delivered"?4:(S.progress>0||["working","paused","halted"].includes(S.agent))?3:2;
+  if(S.cancelled)cur=-1;
+  $("#stages").innerHTML=st.map((s,i)=>`<span class="stage ${i===cur?'on':''}">${s}</span>`).join("")+(S.cancelled?'<span class="pill p-red">Cancelled</span>':'');
+  // banner
+  let b="";
+  if(S.agent==="abandoned") b=`<div class="banner b-ok"><div>●</div><div><b>Agent stopped early: no wasted work.</b>Partial payout of $${S.payout.pay.toFixed(2)} recorded (${S.payout.reason}).</div></div>`;
+  else if(f.state==="current") b=`<div class="banner b-ok"><div>✓</div><div><b>Work basis is current</b>Issue rev ${S.rev}, basis rev ${S.basis.rev}. Farmer is working on up-to-date requirements.</div></div>`;
+  else{const cls=f.state==="superseded"?"b-bad":"b-warn";const ttl={changed:"Requirements changed since Farmer started",superseded:"This work may no longer be needed",cancelled:"Issue cancelled"}[f.state];
+    b=`<div class="banner ${cls}"><div>⚠</div><div><b>${ttl}</b>${f.changes.map(c=>esc(c.what)).join("<br>")}<br><span class="mono">Agent status: ${S.agent==="halted"||S.agent==="paused"?"notified, waiting for decision":"not yet acknowledged"}</span></div></div>`}
+  $("#banner").innerHTML=b;
+  // description + diff
+  $("#revTag").textContent="· rev "+S.rev;
+  $("#desc").textContent=S.desc;
+  $("#diffBox").innerHTML=S.cancelled&&!S.descDiffFrom?`<div class="diff mono"><b>Changed since rev ${S.basis.rev}:</b><br><del>${esc("Expected: gallery shows only files for the selected tab.")}</del><br><ins>${esc("+ Issue cancelled by manager. Stop work; no further changes are needed.")}</ins></div>`:S.descDiffFrom?`<div class="diff mono"><b>Changed since rev ${S.basis.rev}:</b><br><del>${esc("Expected: gallery shows only files for the selected tab.")}</del><br><ins>${esc("+ must keep scroll position when switching tabs. Add regression tests for rapid switching.")}</ins></div>`:"";
+  // agent
+  const map={working:["Working","p-blue"],paused:["Paused: checking freshness","p-amber"],halted:["Halted: needs decision","p-amber"],abandoned:["Stopped (abandoned)","p-red"],delivered:["Delivered","p-green"]};
+  $("#agentState").textContent=map[S.agent][0];$("#agentState").className="pill "+map[S.agent][1];
+  $("#pct").textContent=S.progress+"%";$("#barFill").style.width=S.progress+"%";
+  const dead=["abandoned","delivered"].includes(S.agent);
+  $("#btnStep").disabled=dead||S.progress>=100;$("#btnSubmit").disabled=dead;
+  $("#btnAuto").textContent="Auto-run: "+(S.auto?"on":"off");$("#btnAuto").disabled=dead;
+  // decision
+  if(["halted","paused"].includes(S.agent)&&f.state!=="current"){
+    const canAdapt=f.state==="changed";
+    $("#decision").innerHTML=`<div class="banner b-warn" style="margin:0"><div><b>Decision required</b><div class="row" style="margin-top:8px">
+      ${f.state==="changed"?'<button class="primary" id="dAdapt">Adapt to new requirements</button><button id="dCont">Continue on old basis</button>':''}
+      ${f.state==="superseded"?'<button id="dCont">Continue anyway (flagged)</button>':''}
+      <button class="danger" id="dAb">Abandon, take partial payout</button></div></div></div>`;
+    const a=$("#dAdapt"),c=$("#dCont");
+    if(a)a.onclick=()=>decide("adapt");if(c)c.onclick=()=>decide("continue");$("#dAb").onclick=()=>decide("abandon");
+  } else if(["halted","paused"].includes(S.agent)){ // all acked/info only
+    $("#decision").innerHTML="";S.agent="working";
+  } else $("#decision").innerHTML="";
+  // persistent top alert
+  const al=$("#alert");
+  if(f.state!=="current"&&!dead&&!S.hideAlert){
+    const ttl={changed:"Requirements changed: Farmer paused",superseded:"This work may no longer be needed",cancelled:"Issue cancelled"}[f.state];
+    al.className="alert show"+(f.state==="changed"?"":" red");
+    al.innerHTML=`<div class="box"><b>⚠ ${ttl}</b><ul>${f.changes.map(c=>`<li>${esc(c.what)}</li>`).join("")}</ul><div class="row">
+      ${f.state==="changed"?'<button class="primary" id="aAdapt">Let agent adapt</button><button id="aCont">Continue on old basis</button>':''}
+      ${f.state==="superseded"?'<button id="aCont">Continue anyway</button>':''}
+      <button class="danger" id="aAb">Abandon &amp; pay partial</button></div></div>`;
+    const x=$("#aAdapt"),y=$("#aCont");
+    if(x)x.onclick=()=>decide("adapt");if(y)y.onclick=()=>decide("continue");$("#aAb").onclick=()=>decide("abandon");
+  } else {al.className="alert";al.innerHTML=""}
+  // term
+  const t=$("#term");t.innerHTML=S.log.map(l=>`<div class="${l.cls}">${esc(l.t)}</div>`).join("");t.scrollTop=t.scrollHeight;
+  // review
+  $("#review").innerHTML=S.delivery?`<div class="row" style="align-items:center"><b>Delivery by Farmer</b>${S.delivery.stale?'<span class="pill p-amber">stale basis</span>':'<span class="pill p-green">basis current</span>'}</div><div style="margin-top:6px;color:var(--mute)">Built on basis rev ${S.delivery.basis}. ${S.delivery.stale?"Agent continued after requirements changed; reviewer should check against the latest description.":"Matches the latest requirements."}</div>`:'<span style="color:var(--mute)">No delivery yet.</span>';
+  // basis
+  $("#basis").innerHTML=`<span>Content rev</span><span>${S.basis.rev} <span class="mono" style="color:var(--mute)">(issue now: ${S.rev})</span></span>
+   <span>Reward</span><span>$${S.basis.reward} ${S.reward!==S.basis.reward?`<span class="mono" style="color:var(--mute)">(now $${S.reward})</span>`:""}</span>
+   <span>Base commit</span><span class="mono">${S.basis.baseSha} ${S.baseSha!==S.basis.baseSha?`<span style="color:var(--mute)">(now ${S.baseSha})</span>`:""}</span>
+   <span>Files touched</span><span class="mono">${S.basis.files.join("<br>")}</span>`;
+  // eval
+  const cls={current:"p-green",changed:"p-amber",superseded:"p-red",cancelled:"p-red"}[f.state];
+  $("#eval").innerHTML=`<span class="pill ${cls}">${f.state}</span> <span style="color:var(--mute)">required: ${f.required_action}</span>
+   <div style="margin-top:10px;font-size:12px;color:var(--mute)">Rules:<br>• info (typo, reward, base moved w/o overlap): log only<br>• material (requirements, base overlap): notify + ack<br>• superseded (duplicate, fixed elsewhere): stop or ask<br>• cancelled: stop</div>`;
+  // status + people + activity count
+  const sp=$("#statusPill");
+  if(S.cancelled){sp.className="pill p-red";sp.textContent="● Cancelled"}
+  else if(S.agent==="delivered"){sp.className="pill p-green";sp.textContent="● Requires review"}
+  else if(S.agent==="abandoned"){sp.className="pill p-amber";sp.textContent="● Open · Re-open"}
+  else if(S.progress>0||["working","paused","halted"].includes(S.agent)){sp.className="pill p-blue";sp.textContent="● In progress"}
+  else{sp.className="pill p-blue";sp.textContent="● Open · Open"}
+  $("#assignee").textContent=S.agent==="abandoned"?"Unassigned":"Farmer";
+  $("#actCount").textContent="("+S.feed.length+")";
+  // feed
+  $("#feed").innerHTML=S.feed.map(x=>`<div>${esc(x.t)}<br><small>${x.time}</small></div>`).join("");
+  // reward
+  $("#reward").innerHTML=S.payout?`<b>$${S.payout.pay.toFixed(2)}</b> partial payout<br><span style="color:var(--mute)">max(10% kill fee = $${S.payout.kill.toFixed(2)}, 60% × progress = $${S.payout.prog.toFixed(2)}). Fast abandon after a stale signal is rewarded; the agent isn't punished for others' changes.</span>`
+   :`<b>$${S.reward}</b> <span style="color:var(--mute)">paid on acceptance. If invalidated mid-work: partial payout = max(10% kill fee, 60% × progress).</span>`;
+}
+
+document.querySelectorAll("[data-ev]").forEach(b=>b.onclick=()=>{ if(["abandoned","delivered"].includes(S.agent))return; EVENTS[b.dataset.ev]()});
+$("#btnStep").onclick=step;$("#btnAuto").onclick=toggleAuto;$("#btnSubmit").onclick=submit;
+$("#btnClean").onclick=()=>{stopAuto();cancelReminder();N=[];$("#mailBox").innerHTML="";renderNotifs();init(true)};
+$("#simToggle").onclick=()=>$("#simDrawer").classList.toggle("open");
+$("#btnReset").onclick=()=>{stopAuto();cancelReminder();N=[];$("#mailBox").innerHTML="";renderNotifs();init()};
+init();
+</script>
+</body>
+</html>
